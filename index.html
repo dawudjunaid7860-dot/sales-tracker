@@ -321,6 +321,7 @@ var firebaseConfig = {
 var db = null;
 var docRef = null;
 var cloudOK = false;
+var firstSnapshot = true;
 
 function loadData() {
   try {
@@ -370,14 +371,24 @@ try {
       if (snap.exists) {
         var cloud = snap.data();
         if (cloud && Array.isArray(cloud.sales) && cloud.settings) {
-          var ids = {};
-          cloud.sales.forEach(function (s) { ids[s.id] = true; });
-          var merged = cloud.sales.slice();
-          data.sales.forEach(function (s) { if (!ids[s.id]) merged.push(s); });
-          var hadLocalOnly = merged.length !== cloud.sales.length;
-          data = { sales: merged, settings: cloud.settings };
-          saveLocal();
-          if (hadLocalOnly) docRef.set(data).catch(function () {});
+          if (firstSnapshot) {
+            // First load only: fold in any sales saved on this phone
+            // before the cloud connected, so they are not lost.
+            var ids = {};
+            cloud.sales.forEach(function (s) { ids[s.id] = true; });
+            var merged = cloud.sales.slice();
+            data.sales.forEach(function (s) { if (!ids[s.id]) merged.push(s); });
+            var hadLocalOnly = merged.length !== cloud.sales.length;
+            data = { sales: merged, settings: cloud.settings };
+            saveLocal();
+            if (hadLocalOnly) docRef.set(data).catch(function () {});
+          } else {
+            // After the first load the cloud is the source of truth,
+            // so a sale deleted on any device stays deleted.
+            data = { sales: cloud.sales, settings: cloud.settings };
+            saveLocal();
+          }
+          firstSnapshot = false;
           renderAll();
         }
       } else {
