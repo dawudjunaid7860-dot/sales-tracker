@@ -3,28 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#f59e0b">
+<meta name="theme-color" content="#000000">
 <title>Sales Tracker</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: #fffbeb;
-    color: #1c1917;
+    background: #000;
+    color: #fff;
     max-width: 560px;
     margin: 0 auto;
     padding: 16px 16px 48px;
     -webkit-tap-highlight-color: transparent;
   }
+  .app-header { display: flex; align-items: center; gap: 12px; margin: 8px 0 16px; }
+  .logo {
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+    background: #16a34a;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+  }
+  .app-header h1 { font-size: 28px; margin: 0; }
+  .app-header .sub { margin-bottom: 0; }
   h1 { font-size: 28px; margin: 8px 0 2px; }
-  .sub { color: #78716c; font-size: 14px; margin-bottom: 16px; }
+  .sub { color: #a3a3a3; font-size: 14px; margin-bottom: 16px; }
   .card {
-    background: #fff;
-    border: 1px solid #fde68a;
+    background: #111;
+    border: 1px solid #16a34a;
     border-radius: 16px;
     padding: 16px;
     margin-bottom: 14px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   }
   .totals { display: grid; grid-template-columns: 1fr; gap: 10px; }
   .total-main {
@@ -39,26 +52,26 @@
   .total-main .amount { font-size: 40px; font-weight: 800; line-height: 1.1; }
   .total-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .total-box {
-    background: #fff;
-    border: 1px solid #fde68a;
+    background: #111;
+    border: 1px solid #16a34a;
     border-radius: 14px;
     padding: 12px;
     text-align: center;
   }
-  .total-box .label { font-size: 12px; color: #78716c; }
+  .total-box .label { font-size: 12px; color: #a3a3a3; }
   .total-box .amount { font-size: 22px; font-weight: 700; }
   h2 { font-size: 18px; margin-bottom: 10px; }
-  label { display: block; font-size: 13px; font-weight: 600; color: #57534e; margin: 10px 0 4px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: #d4d4d4; margin: 10px 0 4px; }
   input, select {
     width: 100%;
     font-size: 17px;
     padding: 12px;
-    border: 2px solid #e7e5e4;
+    border: 2px solid #333;
     border-radius: 12px;
-    background: #fff;
-    color: #1c1917;
+    background: #111;
+    color: #fff;
   }
-  input:focus { outline: none; border-color: #f59e0b; }
+  input:focus { outline: none; border-color: #16a34a; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .btn {
     display: block;
@@ -73,9 +86,8 @@
     text-align: center;
   }
   .btn-green { background: #16a34a; color: #fff; }
-  .btn-amber { background: #f59e0b; color: #fff; }
-  .btn-white { background: #fff; border: 2px solid #f59e0b; color: #92400e; }
-  .btn-ghost { background: transparent; color: #57534e; font-size: 15px; padding: 8px; }
+  .btn-white { background: #111; border: 2px solid #16a34a; color: #fff; }
+  .btn-ghost { background: transparent; color: #d4d4d4; font-size: 15px; padding: 8px; }
   .btn:active { transform: scale(0.98); }
   .live-profit {
     margin-top: 12px;
@@ -84,50 +96,41 @@
     text-align: center;
     padding: 10px;
     border-radius: 12px;
-    background: #f0fdf4;
-    color: #15803d;
+    background: #052e16;
+    color: #4ade80;
   }
-  .live-profit.loss { background: #fef2f2; color: #b91c1c; }
-  .ai-box {
-    margin-top: 12px;
-    padding: 12px;
-    border-radius: 12px;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    font-size: 15px;
-    line-height: 1.45;
-    display: none;
-  }
-  .ai-box.show { display: block; }
+  .live-profit.loss { background: #450a0a; color: #f87171; }
   .warn {
     margin-top: 10px;
     padding: 10px 12px;
     border-radius: 12px;
-    background: #fef3c7;
-    border: 1px solid #fcd34d;
+    background: #1a1a1a;
+    border: 1px solid #16a34a;
+    color: #fff;
     font-size: 14px;
     display: none;
   }
   .warn.show { display: block; }
   .price-line { font-size: 16px; padding: 4px 0; }
   .price-line b { float: right; }
-  .rule-line { font-size: 14px; color: #57534e; padding: 3px 0; }
+  .rule-line { font-size: 14px; color: #d4d4d4; padding: 3px 0; }
   .buyer-card {
     display: block;
     width: 100%;
     text-align: left;
-    background: #fff;
-    border: 1px solid #fde68a;
+    background: #111;
+    border: 1px solid #16a34a;
     border-radius: 14px;
     padding: 14px;
     margin-bottom: 10px;
     cursor: pointer;
     font-family: inherit;
+    color: #fff;
   }
-  .buyer-card:active { background: #fffbeb; }
+  .buyer-card:active { background: #1a1a1a; }
   .buyer-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .buyer-name { font-size: 18px; font-weight: 700; }
-  .buyer-meta { font-size: 14px; color: #78716c; margin-top: 4px; }
+  .buyer-meta { font-size: 14px; color: #a3a3a3; margin-top: 4px; }
   .badge {
     font-size: 12px;
     font-weight: 700;
@@ -135,25 +138,25 @@
     border-radius: 999px;
     white-space: nowrap;
   }
-  .badge-ok { background: #dcfce7; color: #166534; }
-  .badge-flag { background: #fef3c7; color: #92400e; }
-  .badge-stop { background: #fee2e2; color: #991b1b; }
+  .badge-ok { background: #16a34a; color: #fff; }
+  .badge-flag { background: #fff; color: #000; }
+  .badge-stop { background: #dc2626; color: #fff; }
   .sale-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
     padding: 12px 4px;
-    border-bottom: 1px solid #f5f5f4;
+    border-bottom: 1px solid #262626;
   }
   .sale-row:last-child { border-bottom: none; }
-  .sale-date { font-size: 14px; color: #78716c; }
+  .sale-date { font-size: 14px; color: #a3a3a3; }
   .sale-amounts { text-align: right; }
   .sale-amounts .paid { font-weight: 700; font-size: 16px; }
-  .sale-amounts .profit { font-size: 13px; color: #15803d; }
+  .sale-amounts .profit { font-size: 13px; color: #4ade80; }
   .del-btn {
-    background: #fee2e2;
-    color: #991b1b;
+    background: #450a0a;
+    color: #fca5a5;
     border: none;
     border-radius: 10px;
     padding: 8px 12px;
@@ -162,21 +165,26 @@
     cursor: pointer;
     flex-shrink: 0;
   }
-  .empty { text-align: center; color: #78716c; padding: 24px 8px; font-size: 15px; }
+  .empty { text-align: center; color: #a3a3a3; padding: 24px 8px; font-size: 15px; }
   .view { display: none; }
   .view.active { display: block; }
-  .back { font-size: 16px; font-weight: 700; color: #92400e; background: none; border: none; cursor: pointer; padding: 4px 0 12px; }
+  .back { font-size: 16px; font-weight: 700; color: #4ade80; background: none; border: none; cursor: pointer; padding: 4px 0 12px; }
   .edit-form { display: none; margin-top: 10px; }
   .edit-form.show { display: block; }
-  .small { font-size: 13px; color: #78716c; margin-top: 8px; line-height: 1.4; }
+  .small { font-size: 13px; color: #a3a3a3; margin-top: 8px; line-height: 1.4; }
 </style>
 </head>
 <body>
-
 <!-- ============ HOME ============ -->
 <div id="view-home" class="view active">
-  <h1>🐟 Sales Tracker</h1>
-  <p class="sub">Log every sale. Know your profit. Never miss an order.</p>
+  <div class="app-header">
+    <div class="logo">💲</div>
+    <div>
+      <h1>Sales Tracker</h1>
+      <p class="sub">Log every sale. Know your profit. Never miss an order.</p>
+    </div>
+  </div>
+  <div class="small" id="cloud-status" style="margin: 0 0 12px;">☁️ Connecting…</div>
 
   <div class="total-main">
     <div class="label">Total profit</div>
@@ -224,9 +232,6 @@
     <div class="live-profit" id="live-profit">Profit: $0</div>
     <div class="warn" id="price-warn"></div>
 
-    <button class="btn btn-amber" id="check-ai" type="button">🤖 Check with AI</button>
-    <div class="ai-box" id="ai-box"></div>
-
     <button class="btn btn-green" id="save-sale" type="button">💾 Save sale</button>
   </div>
 
@@ -257,11 +262,10 @@
       <label>Order rule (weeks between orders)</label>
       <input id="reorderWeeks" type="number" min="1" step="1" inputmode="numeric">
       <button class="btn btn-green" id="save-prices" type="button">Save prices &amp; rules</button>
-      <p class="small">These save on this phone and are used for the price hints and the 1-week / 2-week flags.</p>
+      <p class="small">These save to the cloud and are used for the price hints and the 1-week / 2-week flags.</p>
     </div>
   </div>
 </div>
-
 <!-- ============ BUYERS LIST ============ -->
 <div id="view-buyers" class="view">
   <button class="back" id="back-home" type="button">← Home</button>
@@ -287,10 +291,13 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 "use strict";
 
-/* ---------- storage ---------- */
+/* ---------- storage: cloud (Firebase) + phone backup ---------- */
 var LS_KEY = "salesTracker.v1";
 var DEFAULT_SETTINGS = {
   prices: { "1": 30, "2": 55, "3": 80, "4": 105 },
@@ -300,6 +307,18 @@ var DEFAULT_SETTINGS = {
   reorderWeeks: 2,
   noRefunds: true
 };
+
+var firebaseConfig = {
+  apiKey: "AIzaSyCX9Alnfs1LpwuaEmnagCWQc-9QYqaycYE",
+  authDomain: "sales-tracker-575a8.firebaseapp.com",
+  projectId: "sales-tracker-575a8",
+  storageBucket: "sales-tracker-575a8.firebasestorage.app",
+  messagingSenderId: "405558986151",
+  appId: "1:405558986151:web:86ecf6ad05d5cf38b8e282"
+};
+var db = null;
+var docRef = null;
+var cloudOK = false;
 
 function loadData() {
   try {
@@ -311,10 +330,68 @@ function loadData() {
   } catch (e) {}
   return { sales: [], settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)) };
 }
-function saveData() {
+function saveLocal() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch (e) {}
 }
+function setStatus(msg) {
+  var el = document.getElementById("cloud-status");
+  if (el) el.textContent = msg;
+}
+function saveData() {
+  saveLocal();
+  if (docRef) {
+    setStatus("Saving…");
+    docRef.set(data).then(function () {
+      cloudOK = true;
+      setStatus("☁️ Saved to cloud ✓");
+    }).catch(function () {
+      setStatus("📱 Saved on this phone only");
+    });
+  }
+}
 var data = loadData();
+function renderAll() {
+  renderTotals();
+  renderPrices();
+  updateLiveProfit();
+  if (document.getElementById("view-buyers").classList.contains("active")) renderBuyers();
+  if (document.getElementById("view-buyer").classList.contains("active") && currentBuyer) showBuyer(currentBuyer);
+}
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  docRef = db.collection("tracker").doc("main");
+  firebase.auth().signInAnonymously().then(function () {
+    docRef.onSnapshot(function (snap) {
+      if (snap.exists) {
+        var cloud = snap.data();
+        if (cloud && Array.isArray(cloud.sales) && cloud.settings) {
+          var ids = {};
+          cloud.sales.forEach(function (s) { ids[s.id] = true; });
+          var merged = cloud.sales.slice();
+          data.sales.forEach(function (s) { if (!ids[s.id]) merged.push(s); });
+          var hadLocalOnly = merged.length !== cloud.sales.length;
+          data = { sales: merged, settings: cloud.settings };
+          saveLocal();
+          if (hadLocalOnly) docRef.set(data).catch(function () {});
+          renderAll();
+        }
+      } else {
+        docRef.set(data).then(function () {
+          cloudOK = true;
+          setStatus("☁️ Saved to cloud ✓");
+        }).catch(function () {});
+      }
+    }, function () {
+      setStatus("📱 Saved on this phone only");
+    });
+  }).catch(function () {
+    setStatus("📱 Saved on this phone only");
+  });
+} catch (e) {
+  setStatus("📱 Saved on this phone only");
+}
 
 /* ---------- helpers ---------- */
 function money(n) {
@@ -345,7 +422,6 @@ function fmtDate(dateStr) {
   var d = new Date(parts[0], parts[1] - 1, parts[2]);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
-
 /* ---------- totals ---------- */
 function totals() {
   var sold = 0, paid = 0;
@@ -401,7 +477,6 @@ function savePrices() {
   document.getElementById("edit-prices-form").classList.remove("show");
   updateLiveProfit();
 }
-
 /* ---------- add sale form ---------- */
 function readForm() {
   return {
@@ -431,22 +506,6 @@ function updateLiveProfit() {
     warn.textContent = "";
   }
 }
-function aiCheck() {
-  var f = readForm();
-  var box = document.getElementById("ai-box");
-  if (!f.buyer) { box.textContent = "Type the buyer's name first, then I'll check it."; box.classList.add("show"); return; }
-  if (!f.sold && !f.paid) { box.textContent = "Add the sold price and what you paid first, then I'll check it."; box.classList.add("show"); return; }
-  var profit = f.sold - f.paid;
-  var usual = formulaPrice(f.packs);
-  var msg = "You sold " + f.packs + (f.packs === 1 ? " pack" : " packs") + " to " + f.buyer + " for " + money(f.sold) + ". You paid " + money(f.paid) + ", so you made " + money(profit) + " profit. ✓ That checks out.";
-  if (profit < 0) {
-    msg = "Careful — you sold " + f.packs + (f.packs === 1 ? " pack" : " packs") + " to " + f.buyer + " for " + money(f.sold) + " but you paid " + money(f.paid) + ". That's a " + money(-profit) + " loss, not a profit.";
-  } else if (f.sold > 0 && f.sold < usual) {
-    msg += " One thing: your usual price for " + f.packs + (f.packs === 1 ? " pack" : " packs") + " is " + money(usual) + " — this sale is below it.";
-  }
-  box.textContent = msg;
-  box.classList.add("show");
-}
 function saveSale() {
   var f = readForm();
   if (!f.buyer) { alert("Add the buyer's name first."); return; }
@@ -467,12 +526,10 @@ function saveSale() {
   document.getElementById("paid").value = "";
   document.getElementById("packs").value = "1";
   document.getElementById("date").value = todayStr();
-  document.getElementById("ai-box").classList.remove("show");
   updateLiveProfit();
   var profit = f.sold - f.paid;
   alert("Saved! You made " + money(profit) + " profit from " + f.buyer + ".");
 }
-
 /* ---------- buyers ---------- */
 function buyersSummary() {
   var map = {};
@@ -516,7 +573,6 @@ function renderBuyers() {
     card.addEventListener("click", function () { showBuyer(card.getAttribute("data-buyer")); });
   });
 }
-
 /* ---------- one buyer ---------- */
 var currentBuyer = null;
 function showBuyer(name) {
@@ -578,7 +634,6 @@ document.getElementById("packs").addEventListener("change", function () {
   }
   updateLiveProfit();
 });
-document.getElementById("check-ai").addEventListener("click", aiCheck);
 document.getElementById("save-sale").addEventListener("click", saveSale);
 document.getElementById("go-buyers").addEventListener("click", function () { showView("buyers"); });
 document.getElementById("back-home").addEventListener("click", function () { showView("home"); });
