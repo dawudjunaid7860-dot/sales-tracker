@@ -74,7 +74,6 @@
   input:focus { outline: none; border-color: #16a34a; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .row2 > div { min-width: 0; }
-  input[type="date"] { min-width: 0; }
   @media (max-width: 480px) {
     .row2 { grid-template-columns: 1fr; }
   }
@@ -217,16 +216,8 @@
     <label for="buyer">Who bought it?</label>
     <input id="buyer" type="text" placeholder="Name" autocomplete="off">
 
-    <div class="row2">
-      <div>
-        <label for="packs">Packs</label>
-        <input id="packs" type="number" min="1" step="1" value="1" inputmode="numeric">
-      </div>
-      <div>
-        <label for="date">Date</label>
-        <input id="date" type="date">
-      </div>
-    </div>
+    <label for="packs">Packs</label>
+    <input id="packs" type="number" min="1" step="1" value="1" inputmode="numeric">
 
     <div class="row2">
       <div>
@@ -272,8 +263,6 @@
       <input id="dealsAfter" type="number" min="0" step="1" inputmode="numeric">
       <label>Never sell below this per pack ($)</label>
       <input id="floorPack" type="number" min="0" step="1" inputmode="numeric">
-      <label>Order rule (weeks between orders)</label>
-      <input id="reorderWeeks" type="number" min="1" step="1" inputmode="numeric">
       <button class="btn btn-green" id="save-prices" type="button">Save prices &amp; rules</button>
       <p class="small">These save to the cloud and are used for the price hints and the 1-week / 2-week flags.</p>
     </div>
@@ -475,7 +464,6 @@ function renderPrices() {
   html += '<div class="price-line">Each extra pack after 4<b>+' + money(s.extraPerPack) + "</b></div>";
   document.getElementById("prices-display").innerHTML = html;
   var rules = "";
-  rules += '<div class="rule-line">📅 Order every ' + s.reorderWeeks + (s.reorderWeeks === 1 ? " week" : " weeks") + " — or I stop selling to them.</div>";
   rules += '<div class="rule-line">🤝 Prices can be negotiable, never below ' + money(s.floorPerPack) + " a pack, after " + s.dealsAfterBuys + " purchases only.</div>";
   if (s.noRefunds) rules += '<div class="rule-line">🚫 No refunds.</div>';
   document.getElementById("rules-display").innerHTML = rules;
@@ -489,7 +477,6 @@ function openPriceEditor() {
   document.getElementById("pExtra").value = s.extraPerPack;
   document.getElementById("dealsAfter").value = s.dealsAfterBuys;
   document.getElementById("floorPack").value = s.floorPerPack;
-  document.getElementById("reorderWeeks").value = s.reorderWeeks;
   document.getElementById("edit-prices-form").classList.add("show");
 }
 function savePrices() {
@@ -501,7 +488,6 @@ function savePrices() {
   s.extraPerPack = +document.getElementById("pExtra").value || 0;
   s.dealsAfterBuys = +document.getElementById("dealsAfter").value || 0;
   s.floorPerPack = +document.getElementById("floorPack").value || 0;
-  s.reorderWeeks = +document.getElementById("reorderWeeks").value || 2;
   saveData();
   renderPrices();
   document.getElementById("edit-prices-form").classList.remove("show");
@@ -513,7 +499,7 @@ function readForm() {
   return {
     buyer: document.getElementById("buyer").value.trim(),
     packs: Math.max(1, Math.round(+document.getElementById("packs").value || 1)),
-    date: document.getElementById("date").value || todayStr(),
+    date: todayStr(),
     sold: +document.getElementById("sold").value || 0,
     paid: +document.getElementById("paid").value || 0,
     note: document.getElementById("note").value.trim()
@@ -553,12 +539,11 @@ function saveSale() {
   });
   saveData();
   renderTotals();
-  // reset form, keep date on today
+  // reset form
   document.getElementById("buyer").value = "";
   document.getElementById("sold").value = "";
   document.getElementById("paid").value = "";
   document.getElementById("packs").value = "1";
-  document.getElementById("date").value = todayStr();
   document.getElementById("note").value = "";
   updateLiveProfit();
   var profit = f.sold - f.paid;
@@ -662,8 +647,7 @@ function showView(name) {
 }
 
 /* ---------- wire up ---------- */
-document.getElementById("date").value = todayStr();
-["buyer", "packs", "sold", "paid", "date"].forEach(function (id) {
+["buyer", "packs", "sold", "paid"].forEach(function (id) {
   document.getElementById(id).addEventListener("input", function () {
     if (id === "packs" && document.getElementById("sold").value === "") {
       var packs = Math.max(1, Math.round(+document.getElementById("packs").value || 1));
