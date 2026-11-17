@@ -175,6 +175,7 @@
 </style>
 </head>
 <body>
+
 <!-- ============ HOME ============ -->
 <div id="view-home" class="view active">
   <div class="app-header">
@@ -266,6 +267,7 @@
     </div>
   </div>
 </div>
+
 <!-- ============ BUYERS LIST ============ -->
 <div id="view-buyers" class="view">
   <button class="back" id="back-home" type="button">← Home</button>
@@ -350,6 +352,7 @@ function saveData() {
   }
 }
 var data = loadData();
+
 function renderAll() {
   renderTotals();
   renderPrices();
@@ -422,6 +425,7 @@ function fmtDate(dateStr) {
   var d = new Date(parts[0], parts[1] - 1, parts[2]);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
+
 /* ---------- totals ---------- */
 function totals() {
   var sold = 0, paid = 0;
@@ -477,6 +481,7 @@ function savePrices() {
   document.getElementById("edit-prices-form").classList.remove("show");
   updateLiveProfit();
 }
+
 /* ---------- add sale form ---------- */
 function readForm() {
   return {
@@ -530,6 +535,7 @@ function saveSale() {
   var profit = f.sold - f.paid;
   alert("Saved! You made " + money(profit) + " profit from " + f.buyer + ".");
 }
+
 /* ---------- buyers ---------- */
 function buyersSummary() {
   var map = {};
@@ -573,6 +579,7 @@ function renderBuyers() {
     card.addEventListener("click", function () { showBuyer(card.getAttribute("data-buyer")); });
   });
 }
+
 /* ---------- one buyer ---------- */
 var currentBuyer = null;
 function showBuyer(name) {
@@ -598,7 +605,15 @@ function showBuyer(name) {
   document.getElementById("buyer-sales").innerHTML = html || '<div class="empty">No sales.</div>';
   document.querySelectorAll("#buyer-sales .del-btn").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      if (!confirm("Delete this sale?")) return;
+      if (btn.getAttribute("data-armed") !== "1") {
+        btn.setAttribute("data-armed", "1");
+        btn.textContent = "Tap again to delete";
+        setTimeout(function () {
+          btn.setAttribute("data-armed", "0");
+          btn.textContent = "Delete";
+        }, 3000);
+        return;
+      }
       data.sales = data.sales.filter(function (s) { return s.id !== btn.getAttribute("data-id"); });
       saveData();
       renderTotals();
