@@ -62,7 +62,7 @@
   .total-box .amount { font-size: 22px; font-weight: 700; }
   h2 { font-size: 18px; margin-bottom: 10px; }
   label { display: block; font-size: 13px; font-weight: 600; color: #d4d4d4; margin: 10px 0 4px; }
-  input, select {
+  input, select, textarea {
     width: 100%;
     font-size: 17px;
     padding: 12px;
@@ -73,6 +73,11 @@
   }
   input:focus { outline: none; border-color: #16a34a; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row2 > div { min-width: 0; }
+  input[type="date"] { min-width: 0; }
+  @media (max-width: 480px) {
+    .row2 { grid-template-columns: 1fr; }
+  }
   .btn {
     display: block;
     width: 100%;
@@ -169,6 +174,9 @@
   .view { display: none; }
   .view.active { display: block; }
   .back { font-size: 16px; font-weight: 700; color: #4ade80; background: none; border: none; cursor: pointer; padding: 4px 0 12px; }
+  .nav-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 19px; font-weight: 700; padding: 18px 16px; border: 2px solid #16a34a; border-radius: 16px; background: #111; color: #fff; cursor: pointer; margin-bottom: 12px; text-align: left; font-family: inherit; }
+  .nav-btn:active { background: #1a1a1a; }
+  .sale-note { font-size: 14px; color: #d4d4d4; margin-top: 2px; }
   .edit-form { display: none; margin-top: 10px; }
   .edit-form.show { display: block; }
   .small { font-size: 13px; color: #a3a3a3; margin-top: 8px; line-height: 1.4; }
@@ -178,13 +186,6 @@
 
 <!-- ============ HOME ============ -->
 <div id="view-home" class="view active">
-  <div class="app-header">
-    <div class="logo">💲</div>
-    <div>
-      <h1>Sales Tracker</h1>
-      <p class="sub">Log every sale. Know your profit. Never miss an order.</p>
-    </div>
-  </div>
   <div class="small" id="cloud-status" style="margin: 0 0 12px;">☁️ Connecting…</div>
 
   <div class="total-main">
@@ -203,8 +204,16 @@
   </div>
   <div style="height:14px"></div>
 
+  <button class="nav-btn" id="go-log" type="button"><span>📝 Log a sale</span><span>›</span></button>
+  <button class="nav-btn" id="go-prices" type="button"><span>💰 Prices</span><span>›</span></button>
+  <button class="nav-btn" id="go-sales" type="button"><span>🧾 Sales</span><span>›</span></button>
+</div>
+
+<!-- ============ LOG A SALE ============ -->
+<div id="view-log" class="view">
+  <button class="back" id="back-home-log" type="button">← Home</button>
+  <h1>Log a sale</h1>
   <div class="card">
-    <h2>Add a sale</h2>
     <label for="buyer">Who bought it?</label>
     <input id="buyer" type="text" placeholder="Name" autocomplete="off">
 
@@ -230,18 +239,21 @@
       </div>
     </div>
 
+    <label for="note">Note</label>
+    <textarea id="note" rows="2" placeholder="Add a note about this sale…"></textarea>
+
     <div class="live-profit" id="live-profit">Profit: $0</div>
     <div class="warn" id="price-warn"></div>
 
     <button class="btn btn-green" id="save-sale" type="button">💾 Save sale</button>
   </div>
+</div>
 
-  <button class="btn btn-white" id="go-buyers" type="button">👥 People who bought from you</button>
-
-  <div style="height:14px"></div>
-
+<!-- ============ PRICES ============ -->
+<div id="view-prices" class="view">
+  <button class="back" id="back-home-prices" type="button">← Home</button>
+  <h1>Prices</h1>
   <div class="card">
-    <h2>💰 My prices</h2>
     <div id="prices-display"></div>
     <div id="rules-display" style="margin-top:8px"></div>
     <button class="btn btn-ghost" id="edit-prices-btn" type="button">✏️ Edit prices &amp; rules</button>
@@ -271,7 +283,7 @@
 <!-- ============ BUYERS LIST ============ -->
 <div id="view-buyers" class="view">
   <button class="back" id="back-home" type="button">← Home</button>
-  <h1>People who bought from you</h1>
+  <h1>Sales</h1>
   <p class="sub">Tap a person to see all their sales.</p>
   <div id="buyers-list"></div>
 </div>
@@ -365,8 +377,10 @@ function renderAll() {
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
-  docRef = db.collection("tracker").doc("main");
-  firebase.auth().signInAnonymously().then(function () {
+  firebase.auth().signInAnonymously().then(function (cred) {
+    // Each phone gets its own private list: the cloud doc id is this
+    // phone's anonymous sign-in id, so nobody else can see these sales.
+    docRef = db.collection("tracker").doc(cred.user.uid);
     docRef.onSnapshot(function (snap) {
       if (snap.exists) {
         var cloud = snap.data();
@@ -389,7 +403,7 @@ try {
             saveLocal();
           }
           firstSnapshot = false;
-         setStatus("☁️ Connected ✓");
+          setStatus("☁️ Connected ✓");
           renderAll();
         }
       } else {
@@ -501,7 +515,8 @@ function readForm() {
     packs: Math.max(1, Math.round(+document.getElementById("packs").value || 1)),
     date: document.getElementById("date").value || todayStr(),
     sold: +document.getElementById("sold").value || 0,
-    paid: +document.getElementById("paid").value || 0
+    paid: +document.getElementById("paid").value || 0,
+    note: document.getElementById("note").value.trim()
   };
 }
 function updateLiveProfit() {
@@ -533,7 +548,8 @@ function saveSale() {
     packs: f.packs,
     date: f.date,
     sold: f.sold,
-    paid: f.paid
+    paid: f.paid,
+    note: f.note || ""
   });
   saveData();
   renderTotals();
@@ -543,6 +559,7 @@ function saveSale() {
   document.getElementById("paid").value = "";
   document.getElementById("packs").value = "1";
   document.getElementById("date").value = todayStr();
+  document.getElementById("note").value = "";
   updateLiveProfit();
   var profit = f.sold - f.paid;
   alert("Saved! You made " + money(profit) + " profit from " + f.buyer + ".");
@@ -572,7 +589,7 @@ function renderBuyers() {
   var list = buyersSummary();
   var el = document.getElementById("buyers-list");
   if (!list.length) {
-    el.innerHTML = '<div class="empty">No sales yet.<br>Add your first sale on the Home page.</div>';
+    el.innerHTML = '<div class="empty">No sales yet.<br>Tap Log a sale to add your first sale.</div>';
     return;
   }
   var html = "";
@@ -610,7 +627,8 @@ function showBuyer(name) {
   var html = "";
   sales.forEach(function (s) {
     html += '<div class="sale-row"><div><div style="font-weight:700">' + s.packs + (s.packs === 1 ? " pack" : " packs") + " — " + money(s.sold) + '</div>'
-      + '<div class="sale-date">' + fmtDate(s.date) + " · You paid " + money(s.paid) + "</div></div>"
+      + '<div class="sale-date">' + fmtDate(s.date) + " · You paid " + money(s.paid) + "</div>"
+      + (s.note ? '<div class="sale-note">📝 ' + esc(s.note) + "</div>" : "") + "</div>"
       + '<div class="sale-amounts"><div class="profit">Profit ' + money(s.sold - s.paid) + "</div>"
       + '<button class="del-btn" data-id="' + s.id + '" type="button">Delete</button></div></div>';
   });
@@ -662,7 +680,11 @@ document.getElementById("packs").addEventListener("change", function () {
   updateLiveProfit();
 });
 document.getElementById("save-sale").addEventListener("click", saveSale);
-document.getElementById("go-buyers").addEventListener("click", function () { showView("buyers"); });
+document.getElementById("go-log").addEventListener("click", function () { showView("log"); });
+document.getElementById("go-prices").addEventListener("click", function () { showView("prices"); });
+document.getElementById("go-sales").addEventListener("click", function () { showView("buyers"); });
+document.getElementById("back-home-log").addEventListener("click", function () { showView("home"); });
+document.getElementById("back-home-prices").addEventListener("click", function () { showView("home"); });
 document.getElementById("back-home").addEventListener("click", function () { showView("home"); });
 document.getElementById("back-buyers").addEventListener("click", function () { showView("buyers"); });
 document.getElementById("edit-prices-btn").addEventListener("click", function () {
