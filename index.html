@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f59e0b">
+<title>Sales Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #fffbeb;
+    color: #1c1917;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 16px 16px 48px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1 { font-size: 28px; margin: 8px 0 2px; }
+  .sub { color: #78716c; font-size: 14px; margin-bottom: 16px; }
+  .card {
+    background: #fff;
+    border: 1px solid #fde68a;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .totals { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .total-main {
+    background: #16a34a;
+    color: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .total-main .label { font-size: 14px; opacity: 0.9; }
+  .total-main .amount { font-size: 40px; font-weight: 800; line-height: 1.1; }
+  .total-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .total-box {
+    background: #fff;
+    border: 1px solid #fde68a;
+    border-radius: 14px;
+    padding: 12px;
+    text-align: center;
+  }
+  .total-box .label { font-size: 12px; color: #78716c; }
+  .total-box .amount { font-size: 22px; font-weight: 700; }
+  h2 { font-size: 18px; margin-bottom: 10px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: #57534e; margin: 10px 0 4px; }
+  input, select {
+    width: 100%;
+    font-size: 17px;
+    padding: 12px;
+    border: 2px solid #e7e5e4;
+    border-radius: 12px;
+    background: #fff;
+    color: #1c1917;
+  }
+  input:focus { outline: none; border-color: #f59e0b; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn {
+    display: block;
+    width: 100%;
+    font-size: 17px;
+    font-weight: 700;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    margin-top: 14px;
+    text-align: center;
+  }
+  .btn-green { background: #16a34a; color: #fff; }
+  .btn-amber { background: #f59e0b; color: #fff; }
+  .btn-white { background: #fff; border: 2px solid #f59e0b; color: #92400e; }
+  .btn-ghost { background: transparent; color: #57534e; font-size: 15px; padding: 8px; }
+  .btn:active { transform: scale(0.98); }
+  .live-profit {
+    margin-top: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px;
+    border-radius: 12px;
+    background: #f0fdf4;
+    color: #15803d;
+  }
+  .live-profit.loss { background: #fef2f2; color: #b91c1c; }
+  .ai-box {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    font-size: 15px;
+    line-height: 1.45;
+    display: none;
+  }
+  .ai-box.show { display: block; }
+  .warn {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    font-size: 14px;
+    display: none;
+  }
+  .warn.show { display: block; }
+  .price-line { font-size: 16px; padding: 4px 0; }
+  .price-line b { float: right; }
+  .rule-line { font-size: 14px; color: #57534e; padding: 3px 0; }
+  .buyer-card {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #fff;
+    border: 1px solid #fde68a;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .buyer-card:active { background: #fffbeb; }
+  .buyer-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .buyer-name { font-size: 18px; font-weight: 700; }
+  .buyer-meta { font-size: 14px; color: #78716c; margin-top: 4px; }
+  .badge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge-ok { background: #dcfce7; color: #166534; }
+  .badge-flag { background: #fef3c7; color: #92400e; }
+  .badge-stop { background: #fee2e2; color: #991b1b; }
+  .sale-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 4px;
+    border-bottom: 1px solid #f5f5f4;
+  }
+  .sale-row:last-child { border-bottom: none; }
+  .sale-date { font-size: 14px; color: #78716c; }
+  .sale-amounts { text-align: right; }
+  .sale-amounts .paid { font-weight: 700; font-size: 16px; }
+  .sale-amounts .profit { font-size: 13px; color: #15803d; }
+  .del-btn {
+    background: #fee2e2;
+    color: #991b1b;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .empty { text-align: center; color: #78716c; padding: 24px 8px; font-size: 15px; }
+  .view { display: none; }
+  .view.active { display: block; }
+  .back { font-size: 16px; font-weight: 700; color: #92400e; background: none; border: none; cursor: pointer; padding: 4px 0 12px; }
+  .edit-form { display: none; margin-top: 10px; }
+  .edit-form.show { display: block; }
+  .small { font-size: 13px; color: #78716c; margin-top: 8px; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<div id="view-home" class="view active">
+  <h1>🐟 Sales Tracker</h1>
+  <p class="sub">Log every sale. Know your profit. Never miss an order.</p>
+
+  <div class="total-main">
+    <div class="label">Total profit</div>
+    <div class="amount" id="total-profit">$0</div>
+  </div>
+  <div class="total-row">
+    <div class="total-box">
+      <div class="label">Money you should have</div>
+      <div class="amount" id="total-sold">$0</div>
+    </div>
+    <div class="total-box">
+      <div class="label">Total you spent</div>
+      <div class="amount" id="total-paid">$0</div>
+    </div>
+  </div>
+  <div style="height:14px"></div>
+
+  <div class="card">
+    <h2>Add a sale</h2>
+    <label for="buyer">Who bought it?</label>
+    <input id="buyer" type="text" placeholder="Name" autocomplete="off">
+
+    <div class="row2">
+      <div>
+        <label for="packs">Packs</label>
+        <input id="packs" type="number" min="1" step="1" value="1" inputmode="numeric">
+      </div>
+      <div>
+        <label for="date">Date</label>
+        <input id="date" type="date">
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label for="sold">Sold for ($)</label>
+        <input id="sold" type="number" min="0" step="0.01" placeholder="30" inputmode="decimal">
+      </div>
+      <div>
+        <label for="paid">I paid ($)</label>
+        <input id="paid" type="number" min="0" step="0.01" placeholder="20" inputmode="decimal">
+      </div>
+    </div>
+
+    <div class="live-profit" id="live-profit">Profit: $0</div>
+    <div class="warn" id="price-warn"></div>
+
+    <button class="btn btn-amber" id="check-ai" type="button">🤖 Check with AI</button>
+    <div class="ai-box" id="ai-box"></div>
+
+    <button class="btn btn-green" id="save-sale" type="button">💾 Save sale</button>
+  </div>
+
+  <button class="btn btn-white" id="go-buyers" type="button">👥 People who bought from you</button>
+
+  <div style="height:14px"></div>
+
+  <div class="card">
+    <h2>💰 My prices</h2>
+    <div id="prices-display"></div>
+    <div id="rules-display" style="margin-top:8px"></div>
+    <button class="btn btn-ghost" id="edit-prices-btn" type="button">✏️ Edit prices &amp; rules</button>
+    <div class="edit-form" id="edit-prices-form">
+      <div class="row2">
+        <div><label>1 pack ($)</label><input id="p1" type="number" min="0" step="1" inputmode="numeric"></div>
+        <div><label>2 packs ($)</label><input id="p2" type="number" min="0" step="1" inputmode="numeric"></div>
+      </div>
+      <div class="row2">
+        <div><label>3 packs ($)</label><input id="p3" type="number" min="0" step="1" inputmode="numeric"></div>
+        <div><label>4 packs ($)</label><input id="p4" type="number" min="0" step="1" inputmode="numeric"></div>
+      </div>
+      <label>Each extra pack after 4 ($)</label>
+      <input id="pExtra" type="number" min="0" step="1" inputmode="numeric">
+      <label>Deals start after how many buys?</label>
+      <input id="dealsAfter" type="number" min="0" step="1" inputmode="numeric">
+      <label>Never sell below this per pack ($)</label>
+      <input id="floorPack" type="number" min="0" step="1" inputmode="numeric">
+      <label>Order rule (weeks between orders)</label>
+      <input id="reorderWeeks" type="number" min="1" step="1" inputmode="numeric">
+      <button class="btn btn-green" id="save-prices" type="button">Save prices &amp; rules</button>
+      <p class="small">These save on this phone and are used for the price hints and the 1-week / 2-week flags.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BUYERS LIST ============ -->
+<div id="view-buyers" class="view">
+  <button class="back" id="back-home" type="button">← Home</button>
+  <h1>People who bought from you</h1>
+  <p class="sub">Tap a person to see all their sales.</p>
+  <div id="buyers-list"></div>
+</div>
+
+<!-- ============ ONE BUYER ============ -->
+<div id="view-buyer" class="view">
+  <button class="back" id="back-buyers" type="button">← All buyers</button>
+  <h1 id="buyer-title">Buyer</h1>
+  <p class="sub" id="buyer-sub"></p>
+  <div class="total-row">
+    <div class="total-box"><div class="label">They paid you</div><div class="amount" id="b-sold">$0</div></div>
+    <div class="total-box"><div class="label">You paid</div><div class="amount" id="b-paid">$0</div></div>
+  </div>
+  <div style="height:10px"></div>
+  <div class="total-main"><div class="label">Your profit from them</div><div class="amount" id="b-profit">$0</div></div>
+  <div class="card">
+    <h2>Their sales</h2>
+    <div id="buyer-sales"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- storage ---------- */
+var LS_KEY = "salesTracker.v1";
+var DEFAULT_SETTINGS = {
+  prices: { "1": 30, "2": 55, "3": 80, "4": 105 },
+  extraPerPack: 25,
+  dealsAfterBuys: 5,
+  floorPerPack: 25,
+  reorderWeeks: 2,
+  noRefunds: true
+};
+
+function loadData() {
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      var d = JSON.parse(raw);
+      if (d && Array.isArray(d.sales) && d.settings) return d;
+    }
+  } catch (e) {}
+  return { sales: [], settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)) };
+}
+function saveData() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch (e) {}
+}
+var data = loadData();
+
+/* ---------- helpers ---------- */
+function money(n) {
+  n = Math.round((+n || 0) * 100) / 100;
+  return "$" + (Number.isInteger(n) ? n : n.toFixed(2));
+}
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function daysSince(dateStr) {
+  var parts = dateStr.split("-").map(Number);
+  var then = new Date(parts[0], parts[1] - 1, parts[2]);
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.floor((today - then) / 86400000);
+}
+function formulaPrice(packs) {
+  var p = data.settings.prices;
+  if (packs <= 4) return p[String(packs)] || 0;
+  return (p["4"] || 0) + (packs - 4) * (data.settings.extraPerPack || 0);
+}
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function fmtDate(dateStr) {
+  var parts = dateStr.split("-").map(Number);
+  var d = new Date(parts[0], parts[1] - 1, parts[2]);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+/* ---------- totals ---------- */
+function totals() {
+  var sold = 0, paid = 0;
+  data.sales.forEach(function (s) { sold += +s.sold || 0; paid += +s.paid || 0; });
+  return { sold: sold, paid: paid, profit: sold - paid };
+}
+function renderTotals() {
+  var t = totals();
+  document.getElementById("total-profit").textContent = money(t.profit);
+  document.getElementById("total-sold").textContent = money(t.sold);
+  document.getElementById("total-paid").textContent = money(t.paid);
+}
+
+/* ---------- prices display + edit ---------- */
+function renderPrices() {
+  var s = data.settings, p = s.prices;
+  var html = "";
+  [1, 2, 3, 4].forEach(function (n) {
+    html += '<div class="price-line">' + n + (n === 1 ? " pack" : " packs") + "<b>" + money(p[String(n)]) + "</b></div>";
+  });
+  html += '<div class="price-line">Each extra pack after 4<b>+' + money(s.extraPerPack) + "</b></div>";
+  document.getElementById("prices-display").innerHTML = html;
+  var rules = "";
+  rules += '<div class="rule-line">📅 Order every ' + s.reorderWeeks + (s.reorderWeeks === 1 ? " week" : " weeks") + " — or I stop selling to them.</div>";
+  rules += '<div class="rule-line">🤝 Prices can be negotiable, never below ' + money(s.floorPerPack) + " a pack, after " + s.dealsAfterBuys + " purchases only.</div>";
+  if (s.noRefunds) rules += '<div class="rule-line">🚫 No refunds.</div>';
+  document.getElementById("rules-display").innerHTML = rules;
+}
+function openPriceEditor() {
+  var s = data.settings, p = s.prices;
+  document.getElementById("p1").value = p["1"];
+  document.getElementById("p2").value = p["2"];
+  document.getElementById("p3").value = p["3"];
+  document.getElementById("p4").value = p["4"];
+  document.getElementById("pExtra").value = s.extraPerPack;
+  document.getElementById("dealsAfter").value = s.dealsAfterBuys;
+  document.getElementById("floorPack").value = s.floorPerPack;
+  document.getElementById("reorderWeeks").value = s.reorderWeeks;
+  document.getElementById("edit-prices-form").classList.add("show");
+}
+function savePrices() {
+  var s = data.settings;
+  s.prices["1"] = +document.getElementById("p1").value || 0;
+  s.prices["2"] = +document.getElementById("p2").value || 0;
+  s.prices["3"] = +document.getElementById("p3").value || 0;
+  s.prices["4"] = +document.getElementById("p4").value || 0;
+  s.extraPerPack = +document.getElementById("pExtra").value || 0;
+  s.dealsAfterBuys = +document.getElementById("dealsAfter").value || 0;
+  s.floorPerPack = +document.getElementById("floorPack").value || 0;
+  s.reorderWeeks = +document.getElementById("reorderWeeks").value || 2;
+  saveData();
+  renderPrices();
+  document.getElementById("edit-prices-form").classList.remove("show");
+  updateLiveProfit();
+}
+
+/* ---------- add sale form ---------- */
+function readForm() {
+  return {
+    buyer: document.getElementById("buyer").value.trim(),
+    packs: Math.max(1, Math.round(+document.getElementById("packs").value || 1)),
+    date: document.getElementById("date").value || todayStr(),
+    sold: +document.getElementById("sold").value || 0,
+    paid: +document.getElementById("paid").value || 0
+  };
+}
+function updateLiveProfit() {
+  var f = readForm();
+  var profit = f.sold - f.paid;
+  var el = document.getElementById("live-profit");
+  el.textContent = "Profit: " + money(profit);
+  el.classList.toggle("loss", profit < 0);
+  var warn = document.getElementById("price-warn");
+  var usual = formulaPrice(f.packs);
+  if (f.sold > 0 && f.sold < usual) {
+    warn.textContent = "⚠️ Heads up: your usual price for " + f.packs + (f.packs === 1 ? " pack" : " packs") + " is " + money(usual) + ". You're selling below it.";
+    warn.classList.add("show");
+  } else if (f.sold > 0 && f.packs > 0 && f.sold / f.packs < data.settings.floorPerPack) {
+    warn.textContent = "⚠️ Heads up: that's below " + money(data.settings.floorPerPack) + " a pack — your lowest price.";
+    warn.classList.add("show");
+  } else {
+    warn.classList.remove("show");
+    warn.textContent = "";
+  }
+}
+function aiCheck() {
+  var f = readForm();
+  var box = document.getElementById("ai-box");
+  if (!f.buyer) { box.textContent = "Type the buyer's name first, then I'll check it."; box.classList.add("show"); return; }
+  if (!f.sold && !f.paid) { box.textContent = "Add the sold price and what you paid first, then I'll check it."; box.classList.add("show"); return; }
+  var profit = f.sold - f.paid;
+  var usual = formulaPrice(f.packs);
+  var msg = "You sold " + f.packs + (f.packs === 1 ? " pack" : " packs") + " to " + f.buyer + " for " + money(f.sold) + ". You paid " + money(f.paid) + ", so you made " + money(profit) + " profit. ✓ That checks out.";
+  if (profit < 0) {
+    msg = "Careful — you sold " + f.packs + (f.packs === 1 ? " pack" : " packs") + " to " + f.buyer + " for " + money(f.sold) + " but you paid " + money(f.paid) + ". That's a " + money(-profit) + " loss, not a profit.";
+  } else if (f.sold > 0 && f.sold < usual) {
+    msg += " One thing: your usual price for " + f.packs + (f.packs === 1 ? " pack" : " packs") + " is " + money(usual) + " — this sale is below it.";
+  }
+  box.textContent = msg;
+  box.classList.add("show");
+}
+function saveSale() {
+  var f = readForm();
+  if (!f.buyer) { alert("Add the buyer's name first."); return; }
+  if (!f.sold) { alert("Add how much you sold it for."); return; }
+  data.sales.push({
+    id: "s" + Date.now() + Math.floor(Math.random() * 1000),
+    buyer: f.buyer,
+    packs: f.packs,
+    date: f.date,
+    sold: f.sold,
+    paid: f.paid
+  });
+  saveData();
+  renderTotals();
+  // reset form, keep date on today
+  document.getElementById("buyer").value = "";
+  document.getElementById("sold").value = "";
+  document.getElementById("paid").value = "";
+  document.getElementById("packs").value = "1";
+  document.getElementById("date").value = todayStr();
+  document.getElementById("ai-box").classList.remove("show");
+  updateLiveProfit();
+  var profit = f.sold - f.paid;
+  alert("Saved! You made " + money(profit) + " profit from " + f.buyer + ".");
+}
+
+/* ---------- buyers ---------- */
+function buyersSummary() {
+  var map = {};
+  data.sales.forEach(function (s) {
+    var key = s.buyer.toLowerCase();
+    if (!map[key]) map[key] = { name: s.buyer, sales: [], totalPaid: 0, totalCost: 0, lastDate: s.date };
+    map[key].sales.push(s);
+    map[key].totalPaid += +s.sold || 0;
+    map[key].totalCost += +s.paid || 0;
+    if (s.date > map[key].lastDate) map[key].lastDate = s.date;
+  });
+  var list = Object.keys(map).map(function (k) { return map[k]; });
+  list.sort(function (a, b) { return b.lastDate.localeCompare(a.lastDate); });
+  return list;
+}
+function statusFor(days) {
+  if (days >= 14) return { cls: "badge-stop", text: "⛔ Stop selling — " + days + " days" };
+  if (days >= 7) return { cls: "badge-flag", text: "⚠️ 1 week — order due" };
+  return { cls: "badge-ok", text: "✅ All good" };
+}
+function renderBuyers() {
+  var list = buyersSummary();
+  var el = document.getElementById("buyers-list");
+  if (!list.length) {
+    el.innerHTML = '<div class="empty">No sales yet.<br>Add your first sale on the Home page.</div>';
+    return;
+  }
+  var html = "";
+  list.forEach(function (b) {
+    var days = daysSince(b.lastDate);
+    var st = statusFor(days);
+    html += '<button class="buyer-card" data-buyer="' + esc(b.name) + '" type="button">'
+      + '<div class="buyer-top"><span class="buyer-name">' + esc(b.name) + '</span>'
+      + '<span class="badge ' + st.cls + '">' + st.text + "</span></div>"
+      + '<div class="buyer-meta">Last bought: ' + fmtDate(b.lastDate) + " (" + days + (days === 1 ? " day ago" : " days ago") + ")"
+      + " · " + b.sales.length + (b.sales.length === 1 ? " sale" : " sales")
+      + " · Paid you " + money(b.totalPaid) + "</div></button>";
+  });
+  el.innerHTML = html;
+  el.querySelectorAll(".buyer-card").forEach(function (card) {
+    card.addEventListener("click", function () { showBuyer(card.getAttribute("data-buyer")); });
+  });
+}
+
+/* ---------- one buyer ---------- */
+var currentBuyer = null;
+function showBuyer(name) {
+  currentBuyer = name;
+  var list = buyersSummary();
+  var b = null;
+  list.forEach(function (x) { if (x.name === name) b = x; });
+  if (!b) { showView("buyers"); return; }
+  document.getElementById("buyer-title").textContent = b.name;
+  var days = daysSince(b.lastDate);
+  document.getElementById("buyer-sub").textContent = "Last bought " + fmtDate(b.lastDate) + " — " + days + (days === 1 ? " day ago" : " days ago") + " · " + b.sales.length + (b.sales.length === 1 ? " sale" : " sales");
+  document.getElementById("b-sold").textContent = money(b.totalPaid);
+  document.getElementById("b-paid").textContent = money(b.totalCost);
+  document.getElementById("b-profit").textContent = money(b.totalPaid - b.totalCost);
+  var sales = b.sales.slice().sort(function (a, c) { return c.date.localeCompare(a.date); });
+  var html = "";
+  sales.forEach(function (s) {
+    html += '<div class="sale-row"><div><div style="font-weight:700">' + s.packs + (s.packs === 1 ? " pack" : " packs") + " — " + money(s.sold) + '</div>'
+      + '<div class="sale-date">' + fmtDate(s.date) + " · You paid " + money(s.paid) + "</div></div>"
+      + '<div class="sale-amounts"><div class="profit">Profit ' + money(s.sold - s.paid) + "</div>"
+      + '<button class="del-btn" data-id="' + s.id + '" type="button">Delete</button></div></div>';
+  });
+  document.getElementById("buyer-sales").innerHTML = html || '<div class="empty">No sales.</div>';
+  document.querySelectorAll("#buyer-sales .del-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (!confirm("Delete this sale?")) return;
+      data.sales = data.sales.filter(function (s) { return s.id !== btn.getAttribute("data-id"); });
+      saveData();
+      renderTotals();
+      showBuyer(currentBuyer);
+    });
+  });
+  showView("buyer");
+}
+
+/* ---------- views ---------- */
+function showView(name) {
+  document.querySelectorAll(".view").forEach(function (v) { v.classList.remove("active"); });
+  document.getElementById("view-" + name).classList.add("active");
+  if (name === "buyers") renderBuyers();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- wire up ---------- */
+document.getElementById("date").value = todayStr();
+["buyer", "packs", "sold", "paid", "date"].forEach(function (id) {
+  document.getElementById(id).addEventListener("input", function () {
+    if (id === "packs" && document.getElementById("sold").value === "") {
+      var packs = Math.max(1, Math.round(+document.getElementById("packs").value || 1));
+      document.getElementById("sold").value = formulaPrice(packs);
+    }
+    updateLiveProfit();
+  });
+});
+document.getElementById("packs").addEventListener("change", function () {
+  if (document.getElementById("sold").value === "") {
+    var packs = Math.max(1, Math.round(+document.getElementById("packs").value || 1));
+    document.getElementById("sold").value = formulaPrice(packs);
+  }
+  updateLiveProfit();
+});
+document.getElementById("check-ai").addEventListener("click", aiCheck);
+document.getElementById("save-sale").addEventListener("click", saveSale);
+document.getElementById("go-buyers").addEventListener("click", function () { showView("buyers"); });
+document.getElementById("back-home").addEventListener("click", function () { showView("home"); });
+document.getElementById("back-buyers").addEventListener("click", function () { showView("buyers"); });
+document.getElementById("edit-prices-btn").addEventListener("click", function () {
+  var form = document.getElementById("edit-prices-form");
+  if (form.classList.contains("show")) { form.classList.remove("show"); }
+  else { openPriceEditor(); }
+});
+document.getElementById("save-prices").addEventListener("click", savePrices);
+
+renderTotals();
+renderPrices();
+updateLiveProfit();
+</script>
+</body>
+</html>
