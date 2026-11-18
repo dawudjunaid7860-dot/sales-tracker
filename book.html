@@ -8,8 +8,11 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root { color-scheme: dark; }
-  input[type="date"], input[type="time"] { height: 50px; min-width: 0; color: #fff; }
-  input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.75; cursor: pointer; }
+  .dt-wrap { position: relative; width: 100%; height: 50px; border: 2px solid #333; border-radius: 12px; background: #111; overflow: hidden; }
+  .dt-wrap:focus-within { border-color: #16a34a; }
+  .dt-text { position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; font-size: 17px; color: #a3a3a3; pointer-events: none; white-space: nowrap; }
+  .dt-text.filled { color: #fff; }
+  .dt-wrap input[type="date"], .dt-wrap input[type="time"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: none; padding: 0; margin: 0; font-size: 17px; cursor: pointer; background: transparent; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: #000;
@@ -115,11 +118,17 @@
     <div class="row2">
       <div>
         <label for="cust-date">Day</label>
-        <input id="cust-date" type="date">
+        <div class="dt-wrap">
+          <span class="dt-text" id="date-text">Pick a day</span>
+          <input id="cust-date" type="date">
+        </div>
       </div>
       <div>
         <label for="cust-time">Time</label>
-        <input id="cust-time" type="time">
+        <div class="dt-wrap">
+          <span class="dt-text" id="time-text">Pick a time</span>
+          <input id="cust-time" type="time">
+        </div>
       </div>
     </div>
 
@@ -183,8 +192,17 @@ var picked = { lat: HOSP_LAT, lng: HOSP_LNG };
 
 /* ---------- form ---------- */
 var dateInput = document.getElementById("cust-date");
+var timeInput = document.getElementById("cust-time");
+var dateText = document.getElementById("date-text");
+var timeText = document.getElementById("time-text");
 var today = new Date();
 dateInput.min = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+dateInput.addEventListener("change", function () {
+  if (dateInput.value) { dateText.textContent = fmtDate(dateInput.value); dateText.classList.add("filled"); }
+});
+timeInput.addEventListener("change", function () {
+  if (timeInput.value) { timeText.textContent = fmtTime(timeInput.value); timeText.classList.add("filled"); }
+});
 
 function showWarn(msg) {
   var w = document.getElementById("book-warn");
@@ -239,6 +257,10 @@ document.getElementById("book-another").addEventListener("click", function () {
   document.getElementById("cust-item").value = "";
   dateInput.value = "";
   document.getElementById("cust-time").value = "";
+  dateText.textContent = "Pick a day";
+  dateText.classList.remove("filled");
+  timeText.textContent = "Pick a time";
+  timeText.classList.remove("filled");
   var btn = document.getElementById("book-btn");
   btn.disabled = false;
   btn.textContent = "📅 Book it";
