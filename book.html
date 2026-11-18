@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <title>Book a Pickup — Mile High Vet Hospital</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { color-scheme: dark; }
+  input[type="date"], input[type="time"] { height: 50px; min-width: 0; color: #fff; }
+  input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.75; cursor: pointer; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: #000;
@@ -71,27 +73,6 @@
     display: none;
   }
   .warn.show { display: block; }
-  .spot-line { font-size: 14px; color: #4ade80; margin-top: 8px; font-weight: 700; }
-  .spot-line.not-picked { color: #a3a3a3; font-weight: 400; }
-  #map { height: 320px; border-radius: 14px; border: 2px solid #16a34a; }
-  .pick-dot {
-    background: #16a34a;
-    border: 3px solid #fff;
-    border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.45);
-  }
-  .map-label {
-    background: #111;
-    color: #fff;
-    border: 1px solid #16a34a;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 3px 8px;
-    box-shadow: none;
-  }
-  .map-label::before { display: none; }
-  .leaflet-container { font-family: inherit; background: #111; }
   .meet-photo { width: 100%; border-radius: 12px; border: 2px solid #16a34a; display: block; }
   .small { font-size: 13px; color: #a3a3a3; margin-top: 8px; line-height: 1.4; }
   .ok-big { font-size: 52px; text-align: center; margin: 12px 0 4px; }
@@ -119,12 +100,6 @@
     <img src="hospital.jpg" alt="Mile High Veterinary Hospital" class="meet-photo">
     <div style="font-size:17px;font-weight:700;margin-top:10px">Mile High Veterinary Hospital</div>
     <div style="font-size:14px;color:#a3a3a3">22310 E Arapahoe Rd, Aurora, CO 80016</div>
-  </div>
-
-  <div class="card">
-    <label style="margin-top:0">Meetup spot — tap the pin to see the hospital</label>
-    <div id="map"></div>
-    <div class="spot-line" id="spot-line">📍 Meet at Mile High Veterinary Hospital — 22310 E Arapahoe Rd, Aurora, CO 80016</div>
   </div>
 
   <div class="card">
@@ -162,7 +137,6 @@
   <button class="btn btn-white" id="book-another" type="button">Book another pickup</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -204,24 +178,8 @@ function fmtTime(t) {
   return h + ":" + m + " " + ap;
 }
 
-/* ---------- map ---------- */
-/* The meetup spot is fixed: the hospital. Customers don't pick a spot. */
+/* The meetup spot is fixed: the hospital (no map on the page anymore). */
 var picked = { lat: HOSP_LAT, lng: HOSP_LNG };
-var HOSP_BOUNDS = L.latLngBounds([39.5938, -104.7300], [39.5952, -104.7270]);
-var map = L.map("map", { scrollWheelZoom: false, minZoom: 18, maxZoom: 19, maxBounds: HOSP_BOUNDS, maxBoundsViscosity: 1.0 }).setView([HOSP_LAT, HOSP_LNG], 18);
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);
-L.circle([HOSP_LAT, HOSP_LNG], {
-  radius: 80, color: "#16a34a", weight: 2, fillColor: "#16a34a", fillOpacity: 0.07
-}).addTo(map).bindTooltip("Mile High Veterinary Hospital", {
-  permanent: true, direction: "top", className: "map-label"
-});
-
-var dotIcon = L.divIcon({ className: "pick-dot", iconSize: [22, 22], iconAnchor: [11, 11] });
-var marker = L.marker([HOSP_LAT, HOSP_LNG], { icon: dotIcon }).addTo(map);
-marker.bindPopup('<img src="hospital.jpg" alt="Mile High Veterinary Hospital" style="width:100%;border-radius:8px;display:block"><b>Mile High Veterinary Hospital</b><br>22310 E Arapahoe Rd, Aurora, CO 80016', { maxWidth: 220 }).openPopup();
 
 /* ---------- form ---------- */
 var dateInput = document.getElementById("cust-date");
@@ -244,7 +202,6 @@ function book() {
   if (!item) { showWarn("Say what you want to buy."); return; }
   if (!date) { showWarn("Pick a day."); return; }
   if (!time) { showWarn("Pick a time."); return; }
-  if (!picked) { showWarn("Tap the map to drop your dot where you'll meet."); return; }
   if (!db) { showWarn("Couldn't reach the booking service — check your connection and try again."); return; }
 
   var btn = document.getElementById("book-btn");
