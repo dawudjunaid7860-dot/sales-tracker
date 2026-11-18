@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<title>Book a Pickup — Sonoma Resort</title>
+<title>Book a Pickup — Mile High Vet Hospital</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -92,6 +92,7 @@
   }
   .map-label::before { display: none; }
   .leaflet-container { font-family: inherit; background: #111; }
+  .meet-photo { width: 100%; border-radius: 12px; border: 2px solid #16a34a; display: block; }
   .small { font-size: 13px; color: #a3a3a3; margin-top: 8px; line-height: 1.4; }
   .ok-big { font-size: 52px; text-align: center; margin: 12px 0 4px; }
   .sum-line { font-size: 16px; padding: 5px 0; }
@@ -105,7 +106,7 @@
 <!-- ============ BOOKING FORM ============ -->
 <div id="view-form" class="view active">
   <h1>📍 Book a pickup</h1>
-  <p class="sub">Sonoma Resort Apartments, Aurora — pick a spot on the map, choose a day and time, then book.</p>
+  <p class="sub">Meet at <b>Mile High Veterinary Hospital</b> — 22310 E Arapahoe Rd, Aurora, CO 80016. Pick a day and time, then book.</p>
 
   <div class="card">
     <div class="price-line">1 pack<b>$30</b></div>
@@ -115,9 +116,15 @@
   </div>
 
   <div class="card">
-    <label style="margin-top:0">Where should we meet? Tap the map to drop your dot</label>
+    <img src="hospital.jpg" alt="Mile High Veterinary Hospital" class="meet-photo">
+    <div style="font-size:17px;font-weight:700;margin-top:10px">Mile High Veterinary Hospital</div>
+    <div style="font-size:14px;color:#a3a3a3">22310 E Arapahoe Rd, Aurora, CO 80016</div>
+  </div>
+
+  <div class="card">
+    <label style="margin-top:0">Meetup spot — tap the pin to see the hospital</label>
     <div id="map"></div>
-    <div class="spot-line not-picked" id="spot-line">No spot picked yet — tap the map inside Sonoma Resort.</div>
+    <div class="spot-line" id="spot-line">📍 Meet at Mile High Veterinary Hospital — 22310 E Arapahoe Rd, Aurora, CO 80016</div>
   </div>
 
   <div class="card">
@@ -162,9 +169,9 @@
 <script>
 "use strict";
 
-/* Sonoma Resort at Saddle Rock, 22159 E Ontario Dr, Aurora, CO 80016 */
-var COMPLEX_LAT = 39.5936;
-var COMPLEX_LNG = -104.72963;
+/* Meetup spot: Mile High Veterinary Hospital, 22310 E Arapahoe Rd, Aurora, CO 80016 */
+var HOSP_LAT = 39.59448;
+var HOSP_LNG = -104.72846;
 
 var firebaseConfig = {
   apiKey: "AIzaSyCX9Alnfs1LpwuaEmnagCWQc-9QYqaycYE",
@@ -198,34 +205,23 @@ function fmtTime(t) {
 }
 
 /* ---------- map ---------- */
-var picked = null; /* {lat, lng} */
-var marker = null;
-var COMPLEX_BOUNDS = L.latLngBounds([39.5926, -104.7350], [39.5946, -104.7270]);
-var map = L.map("map", { scrollWheelZoom: false, minZoom: 18, maxZoom: 19, maxBounds: COMPLEX_BOUNDS, maxBoundsViscosity: 1.0 }).setView([COMPLEX_LAT, COMPLEX_LNG], 18);
+/* The meetup spot is fixed: the hospital. Customers don't pick a spot. */
+var picked = { lat: HOSP_LAT, lng: HOSP_LNG };
+var HOSP_BOUNDS = L.latLngBounds([39.5938, -104.7300], [39.5952, -104.7270]);
+var map = L.map("map", { scrollWheelZoom: false, minZoom: 18, maxZoom: 19, maxBounds: HOSP_BOUNDS, maxBoundsViscosity: 1.0 }).setView([HOSP_LAT, HOSP_LNG], 18);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
-L.circle([COMPLEX_LAT, COMPLEX_LNG], {
-  radius: 200, color: "#16a34a", weight: 2, fillColor: "#16a34a", fillOpacity: 0.07
-}).addTo(map).bindTooltip("Sonoma Resort Apartments", {
+L.circle([HOSP_LAT, HOSP_LNG], {
+  radius: 80, color: "#16a34a", weight: 2, fillColor: "#16a34a", fillOpacity: 0.07
+}).addTo(map).bindTooltip("Mile High Veterinary Hospital", {
   permanent: true, direction: "top", className: "map-label"
 });
 
 var dotIcon = L.divIcon({ className: "pick-dot", iconSize: [22, 22], iconAnchor: [11, 11] });
-function setSpot(latlng) {
-  picked = { lat: Math.round(latlng.lat * 100000) / 100000, lng: Math.round(latlng.lng * 100000) / 100000 };
-  if (marker) {
-    marker.setLatLng(latlng);
-  } else {
-    marker = L.marker(latlng, { icon: dotIcon, draggable: true }).addTo(map);
-    marker.on("dragend", function () { setSpot(marker.getLatLng()); });
-  }
-  var el = document.getElementById("spot-line");
-  el.textContent = "📍 Spot picked — tap the map or drag the dot to move it.";
-  el.classList.remove("not-picked");
-}
-map.on("click", function (e) { setSpot(e.latlng); });
+var marker = L.marker([HOSP_LAT, HOSP_LNG], { icon: dotIcon }).addTo(map);
+marker.bindPopup('<img src="hospital.jpg" alt="Mile High Veterinary Hospital" style="width:100%;border-radius:8px;display:block"><b>Mile High Veterinary Hospital</b><br>22310 E Arapahoe Rd, Aurora, CO 80016', { maxWidth: 220 }).openPopup();
 
 /* ---------- form ---------- */
 var dateInput = document.getElementById("cust-date");
@@ -269,7 +265,7 @@ function book() {
       '<div class="sum-line">Name<b>' + esc(name) + '</b></div>'
       + '<div class="sum-line">Buying<b>' + esc(item) + '</b></div>'
       + '<div class="sum-line">When<b>' + fmtDate(date) + ' at ' + fmtTime(time) + '</b></div>'
-      + '<div class="sum-line">Spot<b>Sonoma Resort</b></div>';
+      + '<div class="sum-line">Spot<b>Mile High Vet Hospital</b></div>';
     document.getElementById("view-form").classList.remove("active");
     document.getElementById("view-done").classList.add("active");
     window.scrollTo(0, 0);
@@ -286,11 +282,6 @@ document.getElementById("book-another").addEventListener("click", function () {
   document.getElementById("cust-item").value = "";
   dateInput.value = "";
   document.getElementById("cust-time").value = "";
-  if (marker) { map.removeLayer(marker); marker = null; }
-  picked = null;
-  var el = document.getElementById("spot-line");
-  el.textContent = "No spot picked yet — tap the map inside Sonoma Resort.";
-  el.classList.add("not-picked");
   var btn = document.getElementById("book-btn");
   btn.disabled = false;
   btn.textContent = "📅 Book it";
