@@ -206,6 +206,7 @@
   <button class="nav-btn" id="go-log" type="button"><span>📝 Log a sale</span><span>›</span></button>
   <button class="nav-btn" id="go-prices" type="button"><span>💰 Prices</span><span>›</span></button>
   <button class="nav-btn" id="go-sales" type="button"><span>🧾 Sales</span><span>›</span></button>
+  <button class="nav-btn" id="go-bookings" type="button"><span>📅 Bookings <span class="badge badge-ok" id="bookings-badge" style="display:none"></span></span><span>›</span></button>
 </div>
 
 <!-- ============ LOG A SALE ============ -->
@@ -294,6 +295,14 @@
   </div>
 </div>
 
+<!-- ============ BOOKINGS ============ -->
+<div id="view-bookings" class="view">
+  <button class="back" id="back-home-bookings" type="button">← Home</button>
+  <h1>Bookings</h1>
+  <p class="sub">Pickup bookings from customers. Tap a phone number to call them, tap the spot to see it on a map.</p>
+  <div id="bookings-list"></div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -323,6 +332,7 @@ var db = null;
 var docRef = null;
 var cloudOK = false;
 var firstSnapshot = true;
+var bookings = [];
 
 function loadData() {
   try {
@@ -361,6 +371,7 @@ function renderAll() {
   updateLiveProfit();
   if (document.getElementById("view-buyers").classList.contains("active")) renderBuyers();
   if (document.getElementById("view-buyer").classList.contains("active") && currentBuyer) showBuyer(currentBuyer);
+  if (document.getElementById("view-bookings").classList.contains("active")) renderBookings();
 }
 
 try {
@@ -404,6 +415,17 @@ try {
     }, function () {
       setStatus("📱 Saved on this phone only");
     });
+    // Bookings from the booking page (book.html) — customers book a
+    // pickup, Dawud sees it here.
+    db.collection("bookings").onSnapshot(function (snap) {
+      bookings = [];
+      snap.forEach(function (d) { var b = d.data(); b.id = d.id; bookings.push(b); });
+      bookings.sort(function (a, b) {
+        return ((a.date || "") + " " + (a.time || "")).localeCompare((b.date || "") + " " + (b.time || ""));
+      });
+      renderBookingsBadge();
+      if (document.getElementById("view-bookings").classList.contains("active")) renderBookings();
+    }, function () {});
   }).catch(function () {
     setStatus("📱 Saved on this phone only");
   });
@@ -439,6 +461,63 @@ function fmtDate(dateStr) {
   var parts = dateStr.split("-").map(Number);
   var d = new Date(parts[0], parts[1] - 1, parts[2]);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+function fmtTime(t) {
+  if (!t) return "";
+  var p = String(t).split(":");
+  var h = +p[0], m = p[1] || "00";
+  var ap = h >= 12 ? "PM" : "AM";
+  h = h % 12; if (h === 0) h = 12;
+  return h + ":" + m + " " + ap;
+}
+
+/* ---------- bookings ---------- */
+function renderBookingsBadge() {
+  var n = bookings.filter(function (b) { return b.status === "new"; }).length;
+  var el = document.getElementById("bookings-badge");
+  if (!el) return;
+  if (n > 0) { el.textContent = n + (n === 1 ? " new" : " new"); el.style.display = ""; }
+  else { el.style.display = "none"; }
+}
+function renderBookings() {
+  var el = document.getElementById("bookings-list");
+  if (!bookings.length) {
+    el.innerHTML = '<div class="empty">No bookings yet.<br>Share your booking page and they\'ll show up here.</div>';
+    return;
+  }
+  var html = "";
+  bookings.forEach(function (b) {
+    var isNew = b.status === "new";
+    var mapUrl = (b.lat != null && b.lng != null)
+      ? "https://maps.google.com/?q=" + b.lat + "," + b.lng
+      : "";
+    html += '<div class="card">'
+      + '<div class="buyer-top"><span class="buyer-name">' + esc(b.name || "Customer") + '</span>'
+      + '<span class="badge ' + (isNew ? "badge-flag" : "badge-ok") + '">' + (isNew ? "🆕 New" : "✅ Done") + "</span></div>"
+      + '<div class="buyer-meta">' + esc(b.item || "") + " · " + fmtDate(b.date || "") + " at " + fmtTime(b.time) + "</div>"
+      + '<div class="buyer-meta">📞 <a href="tel:' + esc(String(b.phone || "").replace(/[^0-9+]/g, "")) + '" style="color:#4ade80">' + esc(b.phone || "") + "</a></div>"
+      + (mapUrl ? '<div class="buyer-meta">📍 <a href="' + mapUrl + '" target="_blank" rel="noopener" style="color:#4ade80">See their spot on the map</a></div>' : "")
+      + '<div style="display:flex;gap:10px;margin-top:10px">'
+      + (isNew ? '<button class="btn btn-green done-btn" data-id="' + b.id + '" type="button" style="margin-top:0">✓ Done</button>' : "")
+      + '<button class="del-btn book-del-btn" data-id="' + b.id + '" type="button">Delete</button></div></div>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll(".done-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (db) db.collection("bookings").doc(btn.getAttribute("data-id")).update({ status: "done" }).catch(function () {});
+    });
+  });
+  el.querySelectorAll(".book-del-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (btn.getAttribute("data-armed") !== "1") {
+        btn.setAttribute("data-armed", "1");
+        btn.textContent = "Tap again to delete";
+        setTimeout(function () { btn.setAttribute("data-armed", "0"); btn.textContent = "Delete"; }, 3000);
+        return;
+      }
+      if (db) db.collection("bookings").doc(btn.getAttribute("data-id")).delete().catch(function () {});
+    });
+  });
 }
 
 /* ---------- totals ---------- */
@@ -643,6 +722,7 @@ function showView(name) {
   document.querySelectorAll(".view").forEach(function (v) { v.classList.remove("active"); });
   document.getElementById("view-" + name).classList.add("active");
   if (name === "buyers") renderBuyers();
+  if (name === "bookings") renderBookings();
   window.scrollTo(0, 0);
 }
 
@@ -667,6 +747,8 @@ document.getElementById("save-sale").addEventListener("click", saveSale);
 document.getElementById("go-log").addEventListener("click", function () { showView("log"); });
 document.getElementById("go-prices").addEventListener("click", function () { showView("prices"); });
 document.getElementById("go-sales").addEventListener("click", function () { showView("buyers"); });
+document.getElementById("go-bookings").addEventListener("click", function () { showView("bookings"); });
+document.getElementById("back-home-bookings").addEventListener("click", function () { showView("home"); });
 document.getElementById("back-home-log").addEventListener("click", function () { showView("home"); });
 document.getElementById("back-home-prices").addEventListener("click", function () { showView("home"); });
 document.getElementById("back-home").addEventListener("click", function () { showView("home"); });
