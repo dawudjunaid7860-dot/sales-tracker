@@ -163,7 +163,7 @@
 "use strict";
 
 /* Sonoma Resort at Saddle Rock, 22159 E Ontario Dr, Aurora, CO 80016 */
-var COMPLEX_LAT = 39.59442;
+var COMPLEX_LAT = 39.5936;
 var COMPLEX_LNG = -104.72963;
 
 var firebaseConfig = {
@@ -200,14 +200,14 @@ function fmtTime(t) {
 /* ---------- map ---------- */
 var picked = null; /* {lat, lng} */
 var marker = null;
-var COMPLEX_BOUNDS = L.latLngBounds([39.5920, -104.7355], [39.5965, -104.7265]);
-var map = L.map("map", { scrollWheelZoom: false, minZoom: 17, maxZoom: 19, maxBounds: COMPLEX_BOUNDS, maxBoundsViscosity: 1.0 }).setView([COMPLEX_LAT, COMPLEX_LNG], 17);
+var COMPLEX_BOUNDS = L.latLngBounds([39.5926, -104.7350], [39.5946, -104.7270]);
+var map = L.map("map", { scrollWheelZoom: false, minZoom: 18, maxZoom: 19, maxBounds: COMPLEX_BOUNDS, maxBoundsViscosity: 1.0 }).setView([COMPLEX_LAT, COMPLEX_LNG], 18);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 L.circle([COMPLEX_LAT, COMPLEX_LNG], {
-  radius: 350, color: "#16a34a", weight: 2, fillColor: "#16a34a", fillOpacity: 0.07
+  radius: 200, color: "#16a34a", weight: 2, fillColor: "#16a34a", fillOpacity: 0.07
 }).addTo(map).bindTooltip("Sonoma Resort Apartments", {
   permanent: true, direction: "top", className: "map-label"
 });
