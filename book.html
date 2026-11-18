@@ -105,7 +105,7 @@
 <!-- ============ BOOKING FORM ============ -->
 <div id="view-form" class="view active">
   <h1>📍 Book a pickup</h1>
-  <p class="sub">Sonoma Resort Apartments, Aurora — pick a spot on the map, choose a day and time, and Dawud will meet you there.</p>
+  <p class="sub">Sonoma Resort Apartments, Aurora — pick a spot on the map, choose a day and time, then book.</p>
 
   <div class="card">
     <div class="price-line">1 pack<b>$30</b></div>
@@ -125,7 +125,7 @@
     <input id="cust-name" type="text" placeholder="Your name" autocomplete="off">
 
     <label for="cust-phone">Phone number</label>
-    <input id="cust-phone" type="tel" placeholder="So Dawud can reach you" autocomplete="off">
+    <input id="cust-phone" type="tel" placeholder="So we can reach you" autocomplete="off">
 
     <label for="cust-item">What do you want to buy?</label>
     <input id="cust-item" type="text" placeholder="e.g. 2 packs of Goldfish" autocomplete="off">
@@ -143,7 +143,6 @@
 
     <div class="warn" id="book-warn"></div>
     <button class="btn btn-green" id="book-btn" type="button">📅 Book it</button>
-    <p class="small">Meet in a public spot in the complex, with a parent around. No refunds.</p>
   </div>
 </div>
 
@@ -151,7 +150,7 @@
 <div id="view-done" class="view">
   <div class="ok-big">✅</div>
   <h1 style="text-align:center">You're booked!</h1>
-  <p class="sub" style="text-align:center">Dawud can see this booking in his tracker now.</p>
+  <p class="sub" style="text-align:center">Your booking has been sent.</p>
   <div class="card" id="done-summary"></div>
   <button class="btn btn-white" id="book-another" type="button">Book another pickup</button>
 </div>
@@ -201,7 +200,8 @@ function fmtTime(t) {
 /* ---------- map ---------- */
 var picked = null; /* {lat, lng} */
 var marker = null;
-var map = L.map("map", { scrollWheelZoom: false }).setView([COMPLEX_LAT, COMPLEX_LNG], 16);
+var COMPLEX_BOUNDS = L.latLngBounds([39.5920, -104.7355], [39.5965, -104.7265]);
+var map = L.map("map", { scrollWheelZoom: false, minZoom: 17, maxZoom: 19, maxBounds: COMPLEX_BOUNDS, maxBoundsViscosity: 1.0 }).setView([COMPLEX_LAT, COMPLEX_LNG], 17);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -244,7 +244,7 @@ function book() {
   var date = dateInput.value;
   var time = document.getElementById("cust-time").value;
   if (!name) { showWarn("Add your name first."); return; }
-  if (!phone) { showWarn("Add your phone number so Dawud can reach you."); return; }
+  if (!phone) { showWarn("Add your phone number so we can reach you."); return; }
   if (!item) { showWarn("Say what you want to buy."); return; }
   if (!date) { showWarn("Pick a day."); return; }
   if (!time) { showWarn("Pick a time."); return; }
